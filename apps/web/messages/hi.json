@@ -1,0 +1,91 @@
+{
+  "common": {
+    "appName": "Galactic Ionosphere",
+    "loading": "लोड हो रहा है...",
+    "error": "एक त्रुटि हुई",
+    "retry": "पुनः प्रयास करें",
+    "save": "सहेजें",
+    "cancel": "रद्द करें",
+    "delete": "हटाएं",
+    "edit": "संपादित करें",
+    "create": "बनाएं",
+    "search": "खोजें",
+    "filter": "फ़िल्टर",
+    "viewAll": "सब देखें",
+    "back": "वापस",
+    "next": "अगला",
+    "previous": "पिछला",
+    "submit": "जमा करें",
+    "confirm": "पुष्टि करें",
+    "close": "बंद करें",
+    "yes": "हाँ",
+    "no": "नहीं",
+    "welcome": "स्वागत है, {{name}}!"
+  },
+  "auth": {
+    "login": "लॉग इन",
+    "logout": "लॉग आउट",
+    "register": "रजिस्टर करें",
+    "email": "ईमेल पता",
+    "password": "पासवर्ड",
+    "forgotPassword": "पासवर्ड भूल गए?",
+    "resetPassword": "पासवर्ड रीसेट करें",
+    "loginSuccess": "सफलतापूर्वक लॉग इन किया",
+    "loginError": "अमान्य ईमेल या पासवर्ड"
+  },
+  "nav": {
+    "dashboard": "डैशबोर्ड",
+    "lessons": "पाठ",
+    "games": "खेल",
+    "classroom": "कक्षा",
+    "analytics": "विश्लेषण",
+    "settings": "सेटिंग्स",
+    "profile": "प्रोफ़ाइल"
+  },
+  "dashboard": {
+    "title": "डैशबोर्ड",
+    "welcome": "वापस स्वागत है, {{name}}!",
+    "todayProgress": "आज की प्रगति",
+    "weeklyGoal": "साप्ताहिक लक्ष्य",
+    "recentActivity": "हाल की गतिविधि",
+    "upcomingAssignments": "आगामी असाइनमेंट",
+    "leaderboard": "लीडरबोर्ड"
+  },
+  "lesson": {
+    "title": "पाठ",
+    "new": "नया पाठ",
+    "myLessons": "मेरे पाठ",
+    "allLessons": "सभी पाठ",
+    "draft": "मसौदा",
+    "published": "प्रकाशित",
+    "archived": "संग्रहीत",
+    "estimatedTime": "{{minutes}} मिनट",
+    "startLesson": "पाठ शुरू करें",
+    "continueLesson": "जारी रखें",
+    "completed": "पूर्ण",
+    "progress": "{{percent}}% पूर्ण"
+  },
+  "game": {
+    "title": "खेल",
+    "play": "खेलें",
+    "leaderboard": "लीडरबोर्ड",
+    "level": "स्तर {{num}}",
+    "score": "स्कोर: {{score}}",
+    "stars": "{{count}} तारे",
+    "newRecord": "नया रिकॉर्ड!",
+    "gameOver": "खेल खत्म",
+    "nextLevel": "अगला स्तर",
+    "playAgain": "फिर खेलें"
+  },
+  "settings": {
+    "title": "सेटिंग्स",
+    "language": "भाषा",
+    "selectLanguage": "भाषा चुनें",
+    "theme": "थीम",
+    "notifications": "सूचनाएं",
+    "privacy": "गोपनीयता",
+    "changePassword": "पासवर्ड बदलें",
+    "saveChanges": "परिवर्तन सहेजें",
+    "changesSaved": "परिवर्तन सफलतापूर्वक सहेजे गए"
+  }
+}

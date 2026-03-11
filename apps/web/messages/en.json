@@ -1,0 +1,91 @@
+{
+  "common": {
+    "appName": "Galactic Ionosphere",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Try Again",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "filter": "Filter",
+    "viewAll": "View All",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "confirm": "Confirm",
+    "close": "Close",
+    "yes": "Yes",
+    "no": "No",
+    "welcome": "Welcome, {{name}}!"
+  },
+  "auth": {
+    "login": "Login",
+    "logout": "Logout",
+    "register": "Register",
+    "email": "Email Address",
+    "password": "Password",
+    "forgotPassword": "Forgot Password?",
+    "resetPassword": "Reset Password",
+    "loginSuccess": "Logged in successfully",
+    "loginError": "Invalid email or password"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "lessons": "Lessons",
+    "games": "Games",
+    "classroom": "Classroom",
+    "analytics": "Analytics",
+    "settings": "Settings",
+    "profile": "Profile"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome back, {{name}}!",
+    "todayProgress": "Today's Progress",
+    "weeklyGoal": "Weekly Goal",
+    "recentActivity": "Recent Activity",
+    "upcomingAssignments": "Upcoming Assignments",
+    "leaderboard": "Leaderboard"
+  },
+  "lesson": {
+    "title": "Lessons",
+    "new": "New Lesson",
+    "myLessons": "My Lessons",
+    "allLessons": "All Lessons",
+    "draft": "Draft",
+    "published": "Published",
+    "archived": "Archived",
+    "estimatedTime": "{{minutes}} minutes",
+    "startLesson": "Start Lesson",
+    "continueLesson": "Continue",
+    "completed": "Completed",
+    "progress": "{{percent}}% complete"
+  },
+  "game": {
+    "title": "Games",
+    "play": "Play",
+    "leaderboard": "Leaderboard",
+    "level": "Level {{num}}",
+    "score": "Score: {{score}}",
+    "stars": "{{count}} Stars",
+    "newRecord": "New Record!",
+    "gameOver": "Game Over",
+    "nextLevel": "Next Level",
+    "playAgain": "Play Again"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "selectLanguage": "Select Language",
+    "theme": "Theme",
+    "notifications": "Notifications",
+    "privacy": "Privacy",
+    "changePassword": "Change Password",
+    "saveChanges": "Save Changes",
+    "changesSaved": "Changes saved successfully"
+  }
+}

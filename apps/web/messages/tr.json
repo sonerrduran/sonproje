@@ -1,0 +1,91 @@
+{
+  "common": {
+    "appName": "Galaktik İyonosfer",
+    "loading": "Yükleniyor...",
+    "error": "Bir hata oluştu",
+    "retry": "Tekrar Dene",
+    "save": "Kaydet",
+    "cancel": "İptal",
+    "delete": "Sil",
+    "edit": "Düzenle",
+    "create": "Oluştur",
+    "search": "Ara",
+    "filter": "Filtrele",
+    "viewAll": "Tümünü Gör",
+    "back": "Geri",
+    "next": "İleri",
+    "previous": "Önceki",
+    "submit": "Gönder",
+    "confirm": "Onayla",
+    "close": "Kapat",
+    "yes": "Evet",
+    "no": "Hayır",
+    "welcome": "Hoş geldin, {{name}}!"
+  },
+  "auth": {
+    "login": "Giriş Yap",
+    "logout": "Çıkış Yap",
+    "register": "Kayıt Ol",
+    "email": "E-posta Adresi",
+    "password": "Şifre",
+    "forgotPassword": "Şifremi Unuttum?",
+    "resetPassword": "Şifremi Sıfırla",
+    "loginSuccess": "Başarıyla giriş yapıldı",
+    "loginError": "Geçersiz e-posta veya şifre"
+  },
+  "nav": {
+    "dashboard": "Gösterge Paneli",
+    "lessons": "Dersler",
+    "games": "Oyunlar",
+    "classroom": "Sınıf",
+    "analytics": "Analizler",
+    "settings": "Ayarlar",
+    "profile": "Profil"
+  },
+  "dashboard": {
+    "title": "Gösterge Paneli",
+    "welcome": "Tekrar hoş geldin, {{name}}!",
+    "todayProgress": "Bugünkü İlerleme",
+    "weeklyGoal": "Haftalık Hedef",
+    "recentActivity": "Son Aktiviteler",
+    "upcomingAssignments": "Yaklaşan Ödevler",
+    "leaderboard": "Lider Tablosu"
+  },
+  "lesson": {
+    "title": "Dersler",
+    "new": "Yeni Ders",
+    "myLessons": "Derslerim",
+    "allLessons": "Tüm Dersler",
+    "draft": "Taslak",
+    "published": "Yayında",
+    "archived": "Arşivlendi",
+    "estimatedTime": "{{minutes}} dakika",
+    "startLesson": "Derse Başla",
+    "continueLesson": "Devam Et",
+    "completed": "Tamamlandı",
+    "progress": "%{{percent}} tamamlandı"
+  },
+  "game": {
+    "title": "Oyunlar",
+    "play": "Oyna",
+    "leaderboard": "Lider Tablosu",
+    "level": "{{num}}. Seviye",
+    "score": "Puan: {{score}}",
+    "stars": "{{count}} Yıldız",
+    "newRecord": "Yeni Rekor!",
+    "gameOver": "Oyun Bitti",
+    "nextLevel": "Sonraki Seviye",
+    "playAgain": "Tekrar Oyna"
+  },
+  "settings": {
+    "title": "Ayarlar",
+    "language": "Dil",
+    "selectLanguage": "Dil Seçin",
+    "theme": "Tema",
+    "notifications": "Bildirimler",
+    "privacy": "Gizlilik",
+    "changePassword": "Şifre Değiştir",
+    "saveChanges": "Değişiklikleri Kaydet",
+    "changesSaved": "Değişiklikler başarıyla kaydedildi"
+  }
+}

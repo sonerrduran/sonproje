@@ -1,0 +1,23 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: platform-config
+  namespace: platform
+data:
+  NODE_ENV: "production"
+  AUTH_SERVICE_PORT: "3001"
+  USER_SERVICE_PORT: "3003"
+  SCHOOL_SERVICE_PORT: "3002"
+  LESSON_SERVICE_PORT: "3005"
+  GAME_SERVICE_PORT: "3007"
+  AI_SERVICE_PORT: "3008"
+  ANALYTICS_SERVICE_PORT: "3009"
+  WEB_PORT: "3000"
+  REDIS_HOST: "redis-service"
+  REDIS_PORT: "6379"
+  POSTGRES_HOST: "pgbouncer-service"
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: "platform"
+  JWT_EXPIRES_IN: "15m"
+  REFRESH_TOKEN_EXPIRES_IN: "7d"

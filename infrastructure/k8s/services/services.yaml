@@ -1,0 +1,156 @@
+---
+# Auth Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+  namespace: platform
+  labels:
+    app: auth-service
+spec:
+  selector:
+    app: auth-service
+  ports:
+    - port: 3001
+      targetPort: 3001
+  type: ClusterIP
+---
+# User Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service
+  namespace: platform
+spec:
+  selector:
+    app: user-service
+  ports:
+    - port: 3003
+      targetPort: 3003
+  type: ClusterIP
+---
+# School Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: school-service
+  namespace: platform
+spec:
+  selector:
+    app: school-service
+  ports:
+    - port: 3002
+      targetPort: 3002
+  type: ClusterIP
+---
+# Lesson Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: lesson-service
+  namespace: platform
+spec:
+  selector:
+    app: lesson-service
+  ports:
+    - port: 3005
+      targetPort: 3005
+  type: ClusterIP
+---
+# Game Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: game-service
+  namespace: platform
+spec:
+  selector:
+    app: game-service
+  ports:
+    - port: 3007
+      targetPort: 3007
+  type: ClusterIP
+---
+# AI Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-service
+  namespace: platform
+spec:
+  selector:
+    app: ai-service
+  ports:
+    - port: 3008
+      targetPort: 3008
+  type: ClusterIP
+---
+# Analytics Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: analytics-service
+  namespace: platform
+spec:
+  selector:
+    app: analytics-service
+  ports:
+    - port: 3009
+      targetPort: 3009
+  type: ClusterIP
+---
+# Web Frontend Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-service
+  namespace: platform
+spec:
+  selector:
+    app: web
+  ports:
+    - port: 3000
+      targetPort: 3000
+  type: ClusterIP
+---
+# PostgreSQL Service (Headless for StatefulSet)
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  namespace: platform
+spec:
+  clusterIP: None
+  selector:
+    app: postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+---
+# PgBouncer Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: pgbouncer-service
+  namespace: platform
+spec:
+  selector:
+    app: pgbouncer
+  ports:
+    - port: 5432
+      targetPort: 5432
+  type: ClusterIP
+---
+# Redis Service (Headless for StatefulSet)
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+  namespace: platform
+spec:
+  clusterIP: None
+  selector:
+    app: redis
+  ports:
+    - port: 6379
+      targetPort: 6379

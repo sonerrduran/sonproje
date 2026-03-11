@@ -1,0 +1,91 @@
+{
+  "common": {
+    "appName": "Galactic Ionosphere",
+    "loading": "جارٍ التحميل...",
+    "error": "حدث خطأ",
+    "retry": "حاول مرة أخرى",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "create": "إنشاء",
+    "search": "بحث",
+    "filter": "تصفية",
+    "viewAll": "عرض الكل",
+    "back": "رجوع",
+    "next": "التالي",
+    "previous": "السابق",
+    "submit": "إرسال",
+    "confirm": "تأكيد",
+    "close": "إغلاق",
+    "yes": "نعم",
+    "no": "لا",
+    "welcome": "مرحباً، {{name}}!"
+  },
+  "auth": {
+    "login": "تسجيل الدخول",
+    "logout": "تسجيل الخروج",
+    "register": "التسجيل",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "forgotPassword": "نسيت كلمة المرور؟",
+    "resetPassword": "إعادة تعيين كلمة المرور",
+    "loginSuccess": "تم تسجيل الدخول بنجاح",
+    "loginError": "بريد إلكتروني أو كلمة مرور غير صحيحة"
+  },
+  "nav": {
+    "dashboard": "لوحة التحكم",
+    "lessons": "الدروس",
+    "games": "الألعاب",
+    "classroom": "الفصل الدراسي",
+    "analytics": "التحليلات",
+    "settings": "الإعدادات",
+    "profile": "الملف الشخصي"
+  },
+  "dashboard": {
+    "title": "لوحة التحكم",
+    "welcome": "مرحباً بعودتك، {{name}}!",
+    "todayProgress": "تقدم اليوم",
+    "weeklyGoal": "الهدف الأسبوعي",
+    "recentActivity": "النشاط الأخير",
+    "upcomingAssignments": "الواجبات القادمة",
+    "leaderboard": "لوحة المتصدرين"
+  },
+  "lesson": {
+    "title": "الدروس",
+    "new": "درس جديد",
+    "myLessons": "دروسي",
+    "allLessons": "جميع الدروس",
+    "draft": "مسودة",
+    "published": "منشور",
+    "archived": "مؤرشف",
+    "estimatedTime": "{{minutes}} دقائق",
+    "startLesson": "بدء الدرس",
+    "continueLesson": "متابعة",
+    "completed": "مكتمل",
+    "progress": "{{percent}}% مكتمل"
+  },
+  "game": {
+    "title": "الألعاب",
+    "play": "العب",
+    "leaderboard": "لوحة المتصدرين",
+    "level": "المستوى {{num}}",
+    "score": "النقاط: {{score}}",
+    "stars": "{{count}} نجوم",
+    "newRecord": "رقم قياسي جديد!",
+    "gameOver": "انتهت اللعبة",
+    "nextLevel": "المستوى التالي",
+    "playAgain": "العب مجدداً"
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "language": "اللغة",
+    "selectLanguage": "اختر اللغة",
+    "theme": "المظهر",
+    "notifications": "الإشعارات",
+    "privacy": "الخصوصية",
+    "changePassword": "تغيير كلمة المرور",
+    "saveChanges": "حفظ التغييرات",
+    "changesSaved": "تم حفظ التغييرات بنجاح"
+  }
+}

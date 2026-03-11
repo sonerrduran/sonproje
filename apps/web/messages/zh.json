@@ -1,0 +1,91 @@
+{
+  "common": {
+    "appName": "Galactic Ionosphere",
+    "loading": "加载中...",
+    "error": "发生错误",
+    "retry": "重试",
+    "save": "保存",
+    "cancel": "取消",
+    "delete": "删除",
+    "edit": "编辑",
+    "create": "创建",
+    "search": "搜索",
+    "filter": "筛选",
+    "viewAll": "查看全部",
+    "back": "返回",
+    "next": "下一步",
+    "previous": "上一步",
+    "submit": "提交",
+    "confirm": "确认",
+    "close": "关闭",
+    "yes": "是",
+    "no": "否",
+    "welcome": "欢迎，{{name}}！"
+  },
+  "auth": {
+    "login": "登录",
+    "logout": "退出登录",
+    "register": "注册",
+    "email": "电子邮件地址",
+    "password": "密码",
+    "forgotPassword": "忘记密码？",
+    "resetPassword": "重置密码",
+    "loginSuccess": "登录成功",
+    "loginError": "邮箱或密码无效"
+  },
+  "nav": {
+    "dashboard": "仪表板",
+    "lessons": "课程",
+    "games": "游戏",
+    "classroom": "课堂",
+    "analytics": "分析",
+    "settings": "设置",
+    "profile": "个人资料"
+  },
+  "dashboard": {
+    "title": "仪表板",
+    "welcome": "欢迎回来，{{name}}！",
+    "todayProgress": "今日进度",
+    "weeklyGoal": "每周目标",
+    "recentActivity": "最近活动",
+    "upcomingAssignments": "即将到来的作业",
+    "leaderboard": "排行榜"
+  },
+  "lesson": {
+    "title": "课程",
+    "new": "新建课程",
+    "myLessons": "我的课程",
+    "allLessons": "所有课程",
+    "draft": "草稿",
+    "published": "已发布",
+    "archived": "已归档",
+    "estimatedTime": "{{minutes}} 分钟",
+    "startLesson": "开始课程",
+    "continueLesson": "继续",
+    "completed": "已完成",
+    "progress": "{{percent}}% 完成"
+  },
+  "game": {
+    "title": "游戏",
+    "play": "开始游戏",
+    "leaderboard": "排行榜",
+    "level": "第{{num}}关",
+    "score": "分数：{{score}}",
+    "stars": "{{count}} 星",
+    "newRecord": "新纪录！",
+    "gameOver": "游戏结束",
+    "nextLevel": "下一关",
+    "playAgain": "再玩一次"
+  },
+  "settings": {
+    "title": "设置",
+    "language": "语言",
+    "selectLanguage": "选择语言",
+    "theme": "主题",
+    "notifications": "通知",
+    "privacy": "隐私",
+    "changePassword": "更改密码",
+    "saveChanges": "保存更改",
+    "changesSaved": "更改已成功保存"
+  }
+}

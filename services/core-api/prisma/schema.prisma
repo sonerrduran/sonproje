@@ -1,0 +1,803 @@
+// ============================================================
+// Prisma Schema — Multi-Tenant SaaS Education Platform
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ───────────────────────────────────────────────────
+
+enum UserRole {
+  SUPER_ADMIN
+  SCHOOL_ADMIN
+  TEACHER
+  STUDENT
+  PARENT
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum SchoolStatus {
+  TRIAL
+  ACTIVE
+  SUSPENDED
+  CANCELLED
+}
+
+enum LessonStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum LessonSource {
+  MANUAL
+  AI
+}
+
+enum GameStatus {
+  PUBLISHED
+  UNPUBLISHED
+  MAINTENANCE
+}
+
+enum AiJobStatus {
+  PENDING
+  PROCESSING
+  DONE
+  FAILED
+}
+
+enum AiJobType {
+  LESSON
+  QUESTIONS
+  EXPLANATION
+  SUMMARY
+}
+
+enum ContentBlockType {
+  TEXT
+  HEADING
+  IMAGE
+  VIDEO
+  EXAMPLE
+  DEFINITION
+  NOTE
+  QUIZ
+}
+
+enum QuestionType {
+  MCQ
+  FILL_BLANK
+  DRAG_DROP
+  MATCHING
+  TRUE_FALSE
+  SHORT_ANSWER
+}
+
+enum QuestionDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum AssignmentStatus {
+  ACTIVE
+  COMPLETED
+  EXPIRED
+}
+
+// ─── School (Tenant) ─────────────────────────────────────────
+
+model School {
+  id          String      @id @default(uuid())
+  name        String
+  slug        String      @unique
+  email       String?
+  phone       String?
+  address     String?
+  country     String?
+  logoUrl     String?
+  faviconUrl  String?
+  // Branding & Config stored as JSON
+  branding    Json        @default("{}")
+  config      Json        @default("{}")
+  // Subscription info
+  planId      String?
+  planExpiry  DateTime?
+  status      SchoolStatus @default(TRIAL)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relations
+  users             User[]
+  classrooms        Classroom[]
+  gradelevels       GradeLevel[]
+  academicYears     AcademicYear[]
+  lessons           Lesson[]
+  lessonAssignments LessonAssignment[]
+  gameAssignments   GameAssignment[]
+  practicesets      PracticeSet[]
+  aiJobs            AiJob[]
+  aiUsageLogs       AiUsageLog[]
+  notifications     Notification[]
+  learningEvents    LearningEvent[]
+
+  @@index([slug])
+  @@index([status])
+}
+
+model GradeLevel {
+  id        String   @id @default(uuid())
+  schoolId  String
+  name      String
+  orderNum  Int
+  createdAt DateTime @default(now())
+
+  school     School      @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  classrooms Classroom[]
+
+  @@index([schoolId])
+}
+
+model AcademicYear {
+  id        String   @id @default(uuid())
+  schoolId  String
+  name      String
+  startDate DateTime
+  endDate   DateTime
+  isActive  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  school     School      @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  classrooms Classroom[]
+
+  @@index([schoolId])
+  @@index([schoolId, isActive])
+}
+
+// ─── Users ───────────────────────────────────────────────────
+
+model User {
+  id           String     @id @default(uuid())
+  schoolId     String
+  email        String
+  passwordHash String?
+  role         UserRole
+  firstName    String
+  lastName     String
+  avatarUrl    String?
+  language     String     @default("en")
+  status       UserStatus @default(ACTIVE)
+  metadata     Json       @default("{}")
+  lastLoginAt  DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  school School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  // Auth
+  sessions       Session[]
+  passwordResets PasswordReset[]
+  mfaConfig      MfaConfig?
+
+  // Teaching/Learning
+  taughtClassrooms  ClassroomTeacher[]
+  enrolledClassrooms ClassroomStudent[]
+  createdLessons    Lesson[]
+  lessonProgress    LessonProgress[]
+  practiceAttempts  PracticeAttempt[]
+  gameProgress      GameProgress[]
+
+  // Parent connections
+  parentLinks  ParentStudentLink[] @relation("ParentUser")
+  studentLinks ParentStudentLink[] @relation("StudentUser")
+
+  // Other
+  aiJobs        AiJob[]
+  notifications Notification[]
+  badges        UserBadge[]
+  xpLogs        XpLog[]
+
+  @@unique([email, schoolId])
+  @@index([schoolId])
+  @@index([schoolId, role])
+  @@index([schoolId, status])
+}
+
+model ParentStudentLink {
+  parentId   String
+  studentId  String
+  createdAt  DateTime @default(now())
+
+  parent  User @relation("ParentUser", fields: [parentId], references: [id], onDelete: Cascade)
+  student User @relation("StudentUser", fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@id([parentId, studentId])
+  @@index([studentId])
+}
+
+// ─── Auth ────────────────────────────────────────────────────
+
+model Session {
+  id         String   @id @default(uuid())
+  userId     String
+  schoolId   String
+  tokenHash  String
+  deviceInfo Json?
+  ipAddress  String?
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenHash])
+}
+
+model PasswordReset {
+  id        String   @id @default(uuid())
+  userId    String
+  tokenHash String
+  used      Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tokenHash])
+}
+
+model MfaConfig {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  secret    String   // Encrypted
+  enabled   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─── Classroom ────────────────────────────────────────────────
+
+model Classroom {
+  id             String   @id @default(uuid())
+  schoolId       String
+  gradeLevelId   String?
+  academicYearId String?
+  name           String
+  section        String?
+  isArchived     Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  school       School        @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  gradeLevel   GradeLevel?   @relation(fields: [gradeLevelId], references: [id])
+  academicYear AcademicYear? @relation(fields: [academicYearId], references: [id])
+
+  teachers          ClassroomTeacher[]
+  students          ClassroomStudent[]
+  lessonAssignments LessonAssignment[]
+  gameAssignments   GameAssignment[]
+  announcements     Announcement[]
+
+  @@index([schoolId])
+  @@index([schoolId, isArchived])
+}
+
+model ClassroomTeacher {
+  classroomId String
+  teacherId   String
+  isPrimary   Boolean  @default(false)
+  assignedAt  DateTime @default(now())
+
+  classroom Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
+  teacher   User      @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  @@id([classroomId, teacherId])
+  @@index([teacherId])
+}
+
+model ClassroomStudent {
+  classroomId String
+  studentId   String
+  enrolledAt  DateTime @default(now())
+
+  classroom Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
+  student   User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@id([classroomId, studentId])
+  @@index([studentId])
+}
+
+model Announcement {
+  id          String   @id @default(uuid())
+  classroomId String
+  teacherId   String
+  title       String
+  body        String
+  createdAt   DateTime @default(now())
+
+  classroom Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
+
+  @@index([classroomId])
+}
+
+// ─── Lessons ─────────────────────────────────────────────────
+
+model Lesson {
+  id               String       @id @default(uuid())
+  schoolId         String
+  teacherId        String?
+  title            String
+  subject          String?
+  gradeLevel       String?
+  language         String       @default("en")
+  status           LessonStatus @default(DRAFT)
+  source           LessonSource @default(MANUAL)
+  estimatedMinutes Int?
+  tags             String[]
+  version          Int          @default(1)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  school  School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  teacher User?  @relation(fields: [teacherId], references: [id])
+
+  contentBlocks LessonContentBlock[]
+  assignments   LessonAssignment[]
+  progress      LessonProgress[]
+  questions     Question[]
+
+  @@index([schoolId])
+  @@index([schoolId, status])
+  @@index([schoolId, subject])
+}
+
+model LessonContentBlock {
+  id        String           @id @default(uuid())
+  lessonId  String
+  type      ContentBlockType
+  content   String
+  orderNum  Int
+  metadata  Json             @default("{}")
+  createdAt DateTime         @default(now())
+
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@index([lessonId])
+  @@index([lessonId, orderNum])
+}
+
+model LessonAssignment {
+  id          String           @id @default(uuid())
+  schoolId    String
+  lessonId    String
+  teacherId   String
+  classroomId String?
+  studentId   String?
+  dueDate     DateTime?
+  status      AssignmentStatus @default(ACTIVE)
+  createdAt   DateTime         @default(now())
+
+  school    School    @relation(fields: [schoolId], references: [id])
+  lesson    Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  classroom Classroom? @relation(fields: [classroomId], references: [id])
+
+  @@index([schoolId])
+  @@index([lessonId])
+  @@index([classroomId])
+  @@index([studentId])
+}
+
+model LessonProgress {
+  id            String    @id @default(uuid())
+  studentId     String
+  lessonId      String
+  schoolId      String
+  progressPct   Int       @default(0)
+  completed     Boolean   @default(false)
+  startedAt     DateTime?
+  completedAt   DateTime?
+  updatedAt     DateTime  @updatedAt
+
+  student User   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  lesson  Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, lessonId])
+  @@index([studentId])
+  @@index([lessonId])
+  @@index([schoolId])
+}
+
+// ─── Practice / Questions ─────────────────────────────────────
+
+model Question {
+  id          String             @id @default(uuid())
+  schoolId    String
+  lessonId    String?
+  type        QuestionType
+  body        String
+  options     Json?              // Array of {id, text, imageUrl?}
+  answer      Json               // {correct, explanation}
+  difficulty  QuestionDifficulty @default(MEDIUM)
+  source      LessonSource       @default(MANUAL)
+  language    String             @default("en")
+  tags        String[]
+  createdAt   DateTime           @default(now())
+
+  lesson   Lesson?      @relation(fields: [lessonId], references: [id])
+  setItems PracticeSetItem[]
+
+  @@index([schoolId])
+  @@index([lessonId])
+  @@index([schoolId, difficulty])
+}
+
+model PracticeSet {
+  id        String   @id @default(uuid())
+  schoolId  String
+  teacherId String
+  title     String
+  config    Json     @default("{}") // {timed, timeLimit, shuffle, maxAttempts}
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  school    School   @relation(fields: [schoolId], references: [id])
+  items     PracticeSetItem[]
+  attempts  PracticeAttempt[]
+
+  @@index([schoolId])
+  @@index([teacherId])
+}
+
+model PracticeSetItem {
+  setId      String
+  questionId String
+  orderNum   Int
+
+  set      PracticeSet @relation(fields: [setId], references: [id], onDelete: Cascade)
+  question Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@id([setId, questionId])
+}
+
+model PracticeAttempt {
+  id          String    @id @default(uuid())
+  studentId   String
+  setId       String
+  schoolId    String
+  answers     Json      @default("[]")  // [{questionId, answer, correct, timeMs}]
+  score       Int
+  maxScore    Int
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  student User        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  set     PracticeSet @relation(fields: [setId], references: [id])
+
+  @@index([studentId])
+  @@index([setId])
+  @@index([schoolId])
+}
+
+// ─── Games ────────────────────────────────────────────────────
+
+model Game {
+  id           String     @id @default(uuid())
+  title        String
+  description  String?
+  subject      String?
+  gradeLevels  String[]
+  thumbnailUrl String?
+  tags         String[]
+  templateId   String     // e.g. MATCH_PAIR, QUIZ_RACE, FILL_BLANK
+  status       GameStatus @default(PUBLISHED)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  levels      GameLevel[]
+  progress    GameProgress[]
+  assignments GameAssignment[]
+
+  @@index([status])
+  @@index([subject])
+  @@index([templateId])
+}
+
+model GameLevel {
+  id         String   @id @default(uuid())
+  gameId     String
+  levelNum   Int
+  title      String?
+  assetUrl   String
+  difficulty Int      @default(1) // 1–3
+  timeLimit  Int?     // seconds, null = untimed
+  config     Json     @default("{}")
+  content    Json     @default("{}")  // educational content items
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@unique([gameId, levelNum])
+  @@index([gameId])
+}
+
+model GameProgress {
+  id            String    @id @default(uuid())
+  studentId     String
+  gameId        String
+  schoolId      String
+  currentLevel  Int       @default(1)
+  levelsData    Json      @default("{}") // {levelNum: {stars, highScore, completed, attempts}}
+  totalScore    Int       @default(0)
+  lastPlayedAt  DateTime?
+  updatedAt     DateTime  @updatedAt
+
+  student User @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  game    Game @relation(fields: [gameId], references: [id])
+
+  @@unique([studentId, gameId])
+  @@index([studentId])
+  @@index([schoolId])
+}
+
+model GameAssignment {
+  id           String           @id @default(uuid())
+  schoolId     String
+  gameId       String
+  teacherId    String
+  classroomId  String?
+  minLevel     Int              @default(1)
+  dueDate      DateTime?
+  status       AssignmentStatus @default(ACTIVE)
+  createdAt    DateTime         @default(now())
+
+  school    School     @relation(fields: [schoolId], references: [id])
+  game      Game       @relation(fields: [gameId], references: [id])
+  classroom Classroom? @relation(fields: [classroomId], references: [id])
+
+  @@index([schoolId])
+  @@index([gameId])
+  @@index([classroomId])
+}
+
+// ─── AI Content ───────────────────────────────────────────────
+
+model AiJob {
+  id           String      @id @default(uuid())
+  schoolId     String
+  teacherId    String?
+  type         AiJobType
+  prompt       String
+  status       AiJobStatus @default(PENDING)
+  result       Json?
+  error        String?
+  tokensUsed   Int?
+  qualityScore Int?
+  createdAt    DateTime    @default(now())
+  completedAt  DateTime?
+
+  school    School  @relation(fields: [schoolId], references: [id])
+  teacher   User?   @relation(fields: [teacherId], references: [id])
+  usageLogs AiUsageLog[]
+
+  @@index([schoolId])
+  @@index([status])
+  @@index([schoolId, status])
+}
+
+model AiUsageLog {
+  id         String   @id @default(uuid())
+  schoolId   String
+  jobId      String
+  tokensIn   Int
+  tokensOut  Int
+  costUsd    Decimal  @db.Decimal(10, 6)
+  createdAt  DateTime @default(now())
+
+  school School @relation(fields: [schoolId], references: [id])
+  job    AiJob  @relation(fields: [jobId], references: [id])
+
+  @@index([schoolId])
+  @@index([schoolId, createdAt])
+}
+
+// ─── Notifications ────────────────────────────────────────────
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  schoolId  String
+  type      String
+  title     String
+  body      String?
+  data      Json     @default("{}")
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  school School @relation(fields: [schoolId], references: [id])
+
+  @@index([userId])
+  @@index([userId, read])
+  @@index([schoolId])
+}
+
+// ─── Analytics / Events ───────────────────────────────────────
+
+model LearningEvent {
+  id         String   @id @default(uuid())
+  schoolId   String
+  userId     String
+  eventType  String   // lesson_complete, game_level_done, practice_done, login
+  entityType String?  // lesson | game | practice
+  entityId   String?
+  data       Json     @default("{}")
+  createdAt  DateTime @default(now())
+
+  school School @relation(fields: [schoolId], references: [id])
+
+  @@index([schoolId])
+  @@index([userId])
+  @@index([schoolId, eventType])
+  @@index([createdAt])
+}
+
+// ─── Gamification ─────────────────────────────────────────────
+
+model XpLog {
+  id        String   @id @default(uuid())
+  userId    String
+  schoolId  String
+  amount    Int
+  reason    String   // lesson_complete, game_star, streak, etc.
+  entityId  String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([schoolId])
+}
+
+model Badge {
+  id          String @id @default(uuid())
+  name        String @unique
+  description String
+  iconUrl     String
+  condition   String // JSON-encoded rule
+  xpReward    Int    @default(0)
+
+  userBadges UserBadge[]
+}
+
+model UserBadge {
+  userId   String
+  badgeId  String
+  earnedAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeId], references: [id])
+
+  @@id([userId, badgeId])
+  @@index([userId])
+}
+
+// ─── i18n / Multi-Language ────────────────────────────────────
+
+/// Supported languages registry
+model Language {
+  code      String   @id            // BCP-47: "en", "tr", "es", "zh-CN"
+  name      String                  // "English", "Türkçe", "Español"
+  nativeName String                 // "English", "Türkçe", "Español"
+  direction String   @default("ltr") // "ltr" | "rtl"
+  isActive  Boolean  @default(true)
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  translations         Translation[]
+  localizedContents    LocalizedContent[]
+  contentTranslations  ContentTranslation[]
+  translationJobs      TranslationJob[]
+
+  @@index([isActive])
+}
+
+/// UI key-value translations (dashboard.title, button.save, etc.)
+model Translation {
+  id           String   @id @default(uuid())
+  languageCode String
+  namespace    String   @default("common") // "common" | "lesson" | "game" | "auth"
+  key          String                       // "dashboard.title"
+  value        String                       // "Dashboard" / "Gösterge Paneli"
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  language Language @relation(fields: [languageCode], references: [code], onDelete: Cascade)
+
+  @@unique([languageCode, namespace, key])
+  @@index([languageCode])
+  @@index([namespace])
+}
+
+/// Localized version of Lesson / Game / Question content
+model LocalizedContent {
+  id           String   @id @default(uuid())
+  languageCode String
+  entityType   String   // "lesson" | "game" | "question" | "game_level"
+  entityId     String
+  field        String   // "title" | "description" | "body" | "options"
+  value        String   // localized text
+  isAiGenerated Boolean @default(false)
+  reviewedAt   DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  language Language @relation(fields: [languageCode], references: [code], onDelete: Cascade)
+
+  @@unique([languageCode, entityType, entityId, field])
+  @@index([entityType, entityId])
+  @@index([languageCode])
+}
+
+/// Block-level translation for LessonContentBlock
+model ContentTranslation {
+  id              String   @id @default(uuid())
+  blockId         String   // LessonContentBlock.id
+  languageCode    String
+  content         String   // translated content
+  isAiGenerated   Boolean  @default(false)
+  reviewedAt      DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  language Language @relation(fields: [languageCode], references: [code], onDelete: Cascade)
+
+  @@unique([blockId, languageCode])
+  @@index([blockId])
+  @@index([languageCode])
+}
+
+enum TranslationJobStatus {
+  PENDING
+  PROCESSING
+  DONE
+  PARTIAL
+  FAILED
+}
+
+/// Async AI translation job tracking
+model TranslationJob {
+  id             String              @id @default(uuid())
+  entityType     String              // "lesson" | "game" | "question"
+  entityId       String
+  sourceLang     String              @default("en")
+  targetLangCode String
+  status         TranslationJobStatus @default(PENDING)
+  fieldsTotal    Int                 @default(0)
+  fieldsDone     Int                 @default(0)
+  tokensUsed     Int?
+  error          String?
+  startedAt      DateTime?
+  completedAt    DateTime?
+  createdAt      DateTime            @default(now())
+
+  targetLanguage Language @relation(fields: [targetLangCode], references: [code])
+
+  @@index([entityType, entityId])
+  @@index([targetLangCode])
+  @@index([status])
+}
+

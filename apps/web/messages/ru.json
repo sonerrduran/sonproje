@@ -1,0 +1,91 @@
+{
+  "common": {
+    "appName": "Galactic Ionosphere",
+    "loading": "Загрузка...",
+    "error": "Произошла ошибка",
+    "retry": "Попробовать снова",
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "delete": "Удалить",
+    "edit": "Редактировать",
+    "create": "Создать",
+    "search": "Поиск",
+    "filter": "Фильтр",
+    "viewAll": "Смотреть все",
+    "back": "Назад",
+    "next": "Далее",
+    "previous": "Предыдущий",
+    "submit": "Отправить",
+    "confirm": "Подтвердить",
+    "close": "Закрыть",
+    "yes": "Да",
+    "no": "Нет",
+    "welcome": "Добро пожаловать, {{name}}!"
+  },
+  "auth": {
+    "login": "Войти",
+    "logout": "Выйти",
+    "register": "Зарегистрироваться",
+    "email": "Адрес электронной почты",
+    "password": "Пароль",
+    "forgotPassword": "Забыли пароль?",
+    "resetPassword": "Сбросить пароль",
+    "loginSuccess": "Вход выполнен успешно",
+    "loginError": "Неверный адрес электронной почты или пароль"
+  },
+  "nav": {
+    "dashboard": "Панель управления",
+    "lessons": "Уроки",
+    "games": "Игры",
+    "classroom": "Класс",
+    "analytics": "Аналитика",
+    "settings": "Настройки",
+    "profile": "Профиль"
+  },
+  "dashboard": {
+    "title": "Панель управления",
+    "welcome": "С возвращением, {{name}}!",
+    "todayProgress": "Прогресс за сегодня",
+    "weeklyGoal": "Еженедельная цель",
+    "recentActivity": "Последняя активность",
+    "upcomingAssignments": "Предстоящие задания",
+    "leaderboard": "Таблица лидеров"
+  },
+  "lesson": {
+    "title": "Уроки",
+    "new": "Новый урок",
+    "myLessons": "Мои уроки",
+    "allLessons": "Все уроки",
+    "draft": "Черновик",
+    "published": "Опубликовано",
+    "archived": "В архиве",
+    "estimatedTime": "{{minutes}} минут",
+    "startLesson": "Начать урок",
+    "continueLesson": "Продолжить",
+    "completed": "Завершено",
+    "progress": "{{percent}}% завершено"
+  },
+  "game": {
+    "title": "Игры",
+    "play": "Играть",
+    "leaderboard": "Таблица лидеров",
+    "level": "Уровень {{num}}",
+    "score": "Счёт: {{score}}",
+    "stars": "{{count}} звёзды",
+    "newRecord": "Новый рекорд!",
+    "gameOver": "Игра окончена",
+    "nextLevel": "Следующий уровень",
+    "playAgain": "Играть снова"
+  },
+  "settings": {
+    "title": "Настройки",
+    "language": "Язык",
+    "selectLanguage": "Выбрать язык",
+    "theme": "Тема",
+    "notifications": "Уведомления",
+    "privacy": "Конфиденциальность",
+    "changePassword": "Изменить пароль",
+    "saveChanges": "Сохранить изменения",
+    "changesSaved": "Изменения успешно сохранены"
+  }
+}

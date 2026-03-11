@@ -1,0 +1,83 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'galactic-ionosphere'
+    environment: 'production'
+
+# ─── Alertmanager ─────────────────────────────────────────────────────────────
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+# ─── Alert Rules ──────────────────────────────────────────────────────────────
+rule_files:
+  - /etc/prometheus/alert-rules.yml
+
+# ─── Scrape Configs ───────────────────────────────────────────────────────────
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # ── NestJS Microservices ──────────────────────────────────────────────────
+  - job_name: 'auth-service'
+    static_configs:
+      - targets: ['auth-service:3001']
+    metrics_path: /metrics
+    scrape_interval: 10s
+
+  - job_name: 'user-service'
+    static_configs:
+      - targets: ['user-service:3003']
+    metrics_path: /metrics
+    scrape_interval: 10s
+
+  - job_name: 'school-service'
+    static_configs:
+      - targets: ['school-service:3002']
+    metrics_path: /metrics
+    scrape_interval: 10s
+
+  - job_name: 'lesson-service'
+    static_configs:
+      - targets: ['lesson-service:3005']
+    metrics_path: /metrics
+    scrape_interval: 10s
+
+  - job_name: 'game-service'
+    static_configs:
+      - targets: ['game-service:3007']
+    metrics_path: /metrics
+    scrape_interval: 5s  # More frequent for game service
+
+  - job_name: 'ai-service'
+    static_configs:
+      - targets: ['ai-service:3008']
+    metrics_path: /metrics
+    scrape_interval: 15s
+
+  - job_name: 'analytics-service'
+    static_configs:
+      - targets: ['analytics-service:3009']
+    metrics_path: /metrics
+    scrape_interval: 15s
+
+  # ── Infrastructure Exporters ──────────────────────────────────────────────
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    scrape_interval: 10s
+
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+    scrape_interval: 15s
+
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['nginx:9113']
+    scrape_interval: 10s

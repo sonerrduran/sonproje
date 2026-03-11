@@ -1,0 +1,506 @@
+---
+# ─── Auth Service Deployment ──────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service
+  namespace: platform
+  labels:
+    app: auth-service
+    tier: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: auth-service
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: auth-service
+        tier: backend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3001"
+        prometheus.io/path: "/metrics"
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: auth-service
+          image: platform/auth-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3001
+          envFrom:
+            - configMapRef:
+                name: platform-config
+          env:
+            - name: PORT
+              value: "3001"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: platform-secrets
+                  key: DATABASE_URL
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: platform-secrets
+                  key: REDIS_URL
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: platform-secrets
+                  key: JWT_SECRET
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3001
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3001
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+# ─── User Service Deployment ──────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service
+  namespace: platform
+  labels:
+    app: user-service
+    tier: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: user-service
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: user-service
+        tier: backend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3003"
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: user-service
+          image: platform/user-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3003
+          envFrom:
+            - configMapRef:
+                name: platform-config
+          env:
+            - name: PORT
+              value: "3003"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: platform-secrets
+                  key: DATABASE_URL
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: platform-secrets
+                  key: REDIS_URL
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3003
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3003
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+# ─── School Service Deployment ────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: school-service
+  namespace: platform
+  labels:
+    app: school-service
+    tier: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: school-service
+  template:
+    metadata:
+      labels:
+        app: school-service
+        tier: backend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3002"
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: school-service
+          image: platform/school-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3002
+          envFrom:
+            - configMapRef:
+                name: platform-config
+          env:
+            - name: PORT
+              value: "3002"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: platform-secrets
+                  key: DATABASE_URL
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: platform-secrets
+                  key: REDIS_URL
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3002
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+# ─── Lesson Service Deployment ────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lesson-service
+  namespace: platform
+  labels:
+    app: lesson-service
+    tier: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: lesson-service
+  template:
+    metadata:
+      labels:
+        app: lesson-service
+        tier: backend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3005"
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: lesson-service
+          image: platform/lesson-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3005
+          envFrom:
+            - configMapRef:
+                name: platform-config
+          env:
+            - name: PORT
+              value: "3005"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: platform-secrets
+                  key: DATABASE_URL
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: platform-secrets
+                  key: REDIS_URL
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3005
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+# ─── Game Service Deployment ──────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: game-service
+  namespace: platform
+  labels:
+    app: game-service
+    tier: backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: game-service
+  template:
+    metadata:
+      labels:
+        app: game-service
+        tier: backend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3007"
+    spec:
+      terminationGracePeriodSeconds: 60
+      containers:
+        - name: game-service
+          image: platform/game-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3007
+          envFrom:
+            - configMapRef:
+                name: platform-config
+          env:
+            - name: PORT
+              value: "3007"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: platform-secrets
+                  key: DATABASE_URL
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: platform-secrets
+                  key: REDIS_URL
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3007
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+---
+# ─── AI Service Deployment ────────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-service
+  namespace: platform
+  labels:
+    app: ai-service
+    tier: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ai-service
+  template:
+    metadata:
+      labels:
+        app: ai-service
+        tier: backend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3008"
+    spec:
+      terminationGracePeriodSeconds: 120
+      containers:
+        - name: ai-service
+          image: platform/ai-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3008
+          envFrom:
+            - configMapRef:
+                name: platform-config
+          env:
+            - name: PORT
+              value: "3008"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: platform-secrets
+                  key: DATABASE_URL
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: platform-secrets
+                  key: REDIS_URL
+            - name: GEMINI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: platform-secrets
+                  key: GEMINI_API_KEY
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3008
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 2Gi
+---
+# ─── Analytics Service Deployment ────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: analytics-service
+  namespace: platform
+  labels:
+    app: analytics-service
+    tier: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: analytics-service
+  template:
+    metadata:
+      labels:
+        app: analytics-service
+        tier: backend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3009"
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: analytics-service
+          image: platform/analytics-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3009
+          envFrom:
+            - configMapRef:
+                name: platform-config
+          env:
+            - name: PORT
+              value: "3009"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: platform-secrets
+                  key: DATABASE_URL
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: platform-secrets
+                  key: REDIS_URL
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3009
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+# ─── Web (Next.js) Deployment ─────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: platform
+  labels:
+    app: web
+    tier: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: web
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: web
+        tier: frontend
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: web
+          image: platform/web:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: NEXT_PUBLIC_API_URL
+              value: "https://your-domain.com/api"
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi

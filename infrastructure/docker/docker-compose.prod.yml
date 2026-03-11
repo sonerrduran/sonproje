@@ -1,0 +1,143 @@
+version: '3.9'
+
+# Production overrides — use with:
+# docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+services:
+  postgres:
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports: []  # Don't expose in production
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+
+  redis:
+    command: >
+      redis-server
+      --requirepass ${REDIS_PASSWORD}
+      --maxmemory 2gb
+      --maxmemory-policy allkeys-lru
+      --appendonly yes
+      --appendfsync everysec
+    ports: []
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2G
+
+  auth-service:
+    environment:
+      DATABASE_URL: postgresql://platform:${POSTGRES_PASSWORD}@pgbouncer:5432/platform
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      JWT_SECRET: ${JWT_SECRET}
+      NODE_ENV: production
+    ports: []
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+
+  user-service:
+    environment:
+      DATABASE_URL: postgresql://platform:${POSTGRES_PASSWORD}@pgbouncer:5432/platform
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      NODE_ENV: production
+    ports: []
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  school-service:
+    environment:
+      DATABASE_URL: postgresql://platform:${POSTGRES_PASSWORD}@pgbouncer:5432/platform
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      NODE_ENV: production
+    ports: []
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  lesson-service:
+    environment:
+      DATABASE_URL: postgresql://platform:${POSTGRES_PASSWORD}@pgbouncer:5432/platform
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      NODE_ENV: production
+    ports: []
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  game-service:
+    environment:
+      DATABASE_URL: postgresql://platform:${POSTGRES_PASSWORD}@pgbouncer:5432/platform
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      NODE_ENV: production
+    ports: []
+    deploy:
+      replicas: 3
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+  ai-service:
+    environment:
+      DATABASE_URL: postgresql://platform:${POSTGRES_PASSWORD}@pgbouncer:5432/platform
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      NODE_ENV: production
+    ports: []
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+  analytics-service:
+    environment:
+      DATABASE_URL: postgresql://platform:${POSTGRES_PASSWORD}@pgbouncer:5432/platform
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      NODE_ENV: production
+    ports: []
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  web:
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+    ports: []
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  grafana:
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+    ports: []

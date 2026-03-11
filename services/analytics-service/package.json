@@ -1,0 +1,35 @@
+{
+  "name": "@platform/analytics-service",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "nest start --watch",
+    "build": "nest build",
+    "start": "node dist/main",
+    "lint": "eslint src/ --ext .ts",
+    "typecheck": "tsc --noEmit",
+    "test": "jest",
+    "clean": "rm -rf dist",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate deploy"
+  },
+  "dependencies": {
+    "@platform/types": "workspace:*",
+    "@nestjs/common": "^10.0.0",
+    "@nestjs/core": "^10.0.0",
+    "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/config": "^3.2.0",
+    "@nestjs/bullmq": "^10.1.0",
+    "bullmq": "^5.4.0",
+    "@prisma/client": "^5.12.0",
+    "ioredis": "^5.3.0",
+    "reflect-metadata": "^0.2.0",
+    "rxjs": "^7.8.0"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^10.0.0",
+    "@types/node": "^20.0.0",
+    "prisma": "^5.12.0",
+    "typescript": "^5.4.0"
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "common": {
+    "appName": "Galactic Ionosphere",
+    "loading": "Chargement...",
+    "error": "Une erreur s'est produite",
+    "retry": "Réessayer",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "create": "Créer",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "viewAll": "Voir tout",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "submit": "Soumettre",
+    "confirm": "Confirmer",
+    "close": "Fermer",
+    "yes": "Oui",
+    "no": "Non",
+    "welcome": "Bienvenue, {{name}} !"
+  },
+  "auth": {
+    "login": "Connexion",
+    "logout": "Déconnexion",
+    "register": "S'inscrire",
+    "email": "Adresse e-mail",
+    "password": "Mot de passe",
+    "forgotPassword": "Mot de passe oublié ?",
+    "resetPassword": "Réinitialiser le mot de passe",
+    "loginSuccess": "Connexion réussie",
+    "loginError": "E-mail ou mot de passe invalide"
+  },
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "lessons": "Leçons",
+    "games": "Jeux",
+    "classroom": "Classe",
+    "analytics": "Analytique",
+    "settings": "Paramètres",
+    "profile": "Profil"
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "welcome": "Bon retour, {{name}} !",
+    "todayProgress": "Progrès du jour",
+    "weeklyGoal": "Objectif hebdomadaire",
+    "recentActivity": "Activité récente",
+    "upcomingAssignments": "Devoirs à venir",
+    "leaderboard": "Classement"
+  },
+  "lesson": {
+    "title": "Leçons",
+    "new": "Nouvelle leçon",
+    "myLessons": "Mes leçons",
+    "allLessons": "Toutes les leçons",
+    "draft": "Brouillon",
+    "published": "Publié",
+    "archived": "Archivé",
+    "estimatedTime": "{{minutes}} minutes",
+    "startLesson": "Commencer la leçon",
+    "continueLesson": "Continuer",
+    "completed": "Terminé",
+    "progress": "{{percent}}% terminé"
+  },
+  "game": {
+    "title": "Jeux",
+    "play": "Jouer",
+    "leaderboard": "Classement",
+    "level": "Niveau {{num}}",
+    "score": "Score: {{score}}",
+    "stars": "{{count}} Étoiles",
+    "newRecord": "Nouveau record !",
+    "gameOver": "Fin du jeu",
+    "nextLevel": "Niveau suivant",
+    "playAgain": "Rejouer"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "language": "Langue",
+    "selectLanguage": "Sélectionner la langue",
+    "theme": "Thème",
+    "notifications": "Notifications",
+    "privacy": "Confidentialité",
+    "changePassword": "Changer le mot de passe",
+    "saveChanges": "Enregistrer les modifications",
+    "changesSaved": "Modifications enregistrées avec succès"
+  }
+}

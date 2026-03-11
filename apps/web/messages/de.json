@@ -1,0 +1,91 @@
+{
+  "common": {
+    "appName": "Galactic Ionosphere",
+    "loading": "Laden...",
+    "error": "Ein Fehler ist aufgetreten",
+    "retry": "Erneut versuchen",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "create": "Erstellen",
+    "search": "Suchen",
+    "filter": "Filtern",
+    "viewAll": "Alle anzeigen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "previous": "Zurück",
+    "submit": "Absenden",
+    "confirm": "Bestätigen",
+    "close": "Schließen",
+    "yes": "Ja",
+    "no": "Nein",
+    "welcome": "Willkommen, {{name}}!"
+  },
+  "auth": {
+    "login": "Anmelden",
+    "logout": "Abmelden",
+    "register": "Registrieren",
+    "email": "E-Mail-Adresse",
+    "password": "Passwort",
+    "forgotPassword": "Passwort vergessen?",
+    "resetPassword": "Passwort zurücksetzen",
+    "loginSuccess": "Erfolgreich angemeldet",
+    "loginError": "Ungültige E-Mail oder Passwort"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "lessons": "Lektionen",
+    "games": "Spiele",
+    "classroom": "Klassenzimmer",
+    "analytics": "Analytik",
+    "settings": "Einstellungen",
+    "profile": "Profil"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Willkommen zurück, {{name}}!",
+    "todayProgress": "Heutiger Fortschritt",
+    "weeklyGoal": "Wochenziel",
+    "recentActivity": "Letzte Aktivitäten",
+    "upcomingAssignments": "Bevorstehende Aufgaben",
+    "leaderboard": "Bestenliste"
+  },
+  "lesson": {
+    "title": "Lektionen",
+    "new": "Neue Lektion",
+    "myLessons": "Meine Lektionen",
+    "allLessons": "Alle Lektionen",
+    "draft": "Entwurf",
+    "published": "Veröffentlicht",
+    "archived": "Archiviert",
+    "estimatedTime": "{{minutes}} Minuten",
+    "startLesson": "Lektion starten",
+    "continueLesson": "Fortsetzen",
+    "completed": "Abgeschlossen",
+    "progress": "{{percent}}% abgeschlossen"
+  },
+  "game": {
+    "title": "Spiele",
+    "play": "Spielen",
+    "leaderboard": "Bestenliste",
+    "level": "Level {{num}}",
+    "score": "Punkte: {{score}}",
+    "stars": "{{count}} Sterne",
+    "newRecord": "Neuer Rekord!",
+    "gameOver": "Spiel vorbei",
+    "nextLevel": "Nächstes Level",
+    "playAgain": "Nochmal spielen"
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "language": "Sprache",
+    "selectLanguage": "Sprache auswählen",
+    "theme": "Thema",
+    "notifications": "Benachrichtigungen",
+    "privacy": "Datenschutz",
+    "changePassword": "Passwort ändern",
+    "saveChanges": "Änderungen speichern",
+    "changesSaved": "Änderungen erfolgreich gespeichert"
+  }
+}

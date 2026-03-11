@@ -1,0 +1,120 @@
+groups:
+  # ─── API Performance Alerts ────────────────────────────────────────────────
+  - name: api_performance
+    rules:
+      - alert: HighAPILatency
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, service)) > 0.5
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High API latency on {{ $labels.service }}"
+          description: "95th percentile latency is {{ $value | humanizeDuration }} (threshold: 500ms)"
+
+      - alert: CriticalAPILatency
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, service)) > 2
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical API latency on {{ $labels.service }}"
+          description: "95th percentile latency is {{ $value | humanizeDuration }}"
+
+      - alert: HighErrorRate
+        expr: sum(rate(http_requests_total{status=~"5.."}[5m])) by (service) / sum(rate(http_requests_total[5m])) by (service) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate on {{ $labels.service }}"
+          description: "Error rate is {{ $value | humanizePercentage }}"
+
+  # ─── Server Resource Alerts ────────────────────────────────────────────────
+  - name: server_resources
+    rules:
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is {{ $value | humanize }}%"
+
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is {{ $value | humanize }}%"
+
+      - alert: DiskSpaceLow
+        expr: (1 - node_filesystem_avail_bytes / node_filesystem_size_bytes) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low disk space on {{ $labels.instance }}"
+          description: "Disk usage is {{ $value | humanize }}%"
+
+  # ─── Database Alerts ───────────────────────────────────────────────────────
+  - name: database
+    rules:
+      - alert: PostgreSQLDown
+        expr: pg_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "PostgreSQL instance is unreachable"
+
+      - alert: PostgreSQLConnectionsHigh
+        expr: pg_stat_activity_count > 400
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High PostgreSQL connections"
+          description: "Active connections: {{ $value }}"
+
+      - alert: RedisDown
+        expr: redis_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis is down"
+          description: "Redis instance is unreachable"
+
+      - alert: RedisMemoryHigh
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Redis memory usage high"
+          description: "Redis memory is at {{ $value | humanizePercentage }}"
+
+  # ─── Service Health Alerts ─────────────────────────────────────────────────
+  - name: service_health
+    rules:
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "{{ $labels.job }} on {{ $labels.instance }} is unreachable"
+
+      - alert: PodRestarting
+        expr: increase(kube_pod_container_status_restarts_total[15m]) > 3
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Pod restarting: {{ $labels.pod }}"
+          description: "Pod {{ $labels.pod }} has restarted {{ $value }} times in 15 minutes"

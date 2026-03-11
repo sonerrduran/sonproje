@@ -1,0 +1,191 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository_owner }}/galactic-ionosphere
+
+jobs:
+  # ─── Lint & Type Check ──────────────────────────────────────────────────────
+  lint:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Type check
+        run: pnpm type-check
+
+  # ─── Tests ──────────────────────────────────────────────────────────────────
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    needs: lint
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: platform
+          POSTGRES_PASSWORD: test_pass
+          POSTGRES_DB: platform_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+        ports:
+          - 6379:6379
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run tests
+        env:
+          DATABASE_URL: postgresql://platform:test_pass@localhost:5432/platform_test
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET: test_jwt_secret
+        run: pnpm test
+
+  # ─── Build & Push Docker Images ─────────────────────────────────────────────
+  build:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      packages: write
+
+    strategy:
+      matrix:
+        service:
+          - name: auth-service
+            dockerfile: services/auth-service/Dockerfile
+          - name: user-service
+            dockerfile: services/user-service/Dockerfile
+          - name: school-service
+            dockerfile: services/school-service/Dockerfile
+          - name: lesson-service
+            dockerfile: services/lesson-service/Dockerfile
+          - name: game-service
+            dockerfile: services/game-service/Dockerfile
+          - name: ai-service
+            dockerfile: services/ai-service/Dockerfile
+          - name: analytics-service
+            dockerfile: services/analytics-service/Dockerfile
+          - name: web
+            dockerfile: apps/web/Dockerfile
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${{ matrix.service.name }}
+          tags: |
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ${{ matrix.service.dockerfile }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ─── Deploy to Kubernetes ───────────────────────────────────────────────────
+  deploy:
+    name: Deploy to Kubernetes
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > kubeconfig.yaml
+          echo "KUBECONFIG=kubeconfig.yaml" >> $GITHUB_ENV
+
+      - name: Update image tags
+        run: |
+          SHA=$(echo ${{ github.sha }} | cut -c1-7)
+          for service in auth-service user-service school-service lesson-service game-service ai-service analytics-service; do
+            kubectl set image deployment/$service \
+              $service=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/$service:sha-$SHA \
+              -n platform
+          done
+          kubectl set image deployment/web \
+            web=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/web:sha-$SHA \
+            -n platform
+
+      - name: Wait for rollout
+        run: |
+          for service in auth-service user-service school-service lesson-service game-service ai-service analytics-service web; do
+            kubectl rollout status deployment/$service -n platform --timeout=300s
+          done
+
+      - name: Verify deployment
+        run: |
+          kubectl get pods -n platform
+          echo "✅ Deployment successful!"

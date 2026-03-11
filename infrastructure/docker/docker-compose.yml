@@ -1,0 +1,438 @@
+version: '3.9'
+
+networks:
+  platform-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
+  prometheus_data:
+  grafana_data:
+  loki_data:
+
+services:
+  # ═══════════════════════════════════════════════════════════════
+  # INFRASTRUCTURE
+  # ═══════════════════════════════════════════════════════════════
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: platform-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: platform
+      POSTGRES_PASSWORD: platform_dev_pass
+      POSTGRES_DB: platform
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U platform']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - platform-net
+
+  pgbouncer:
+    image: pgbouncer/pgbouncer:latest
+    container_name: platform-pgbouncer
+    restart: unless-stopped
+    environment:
+      DATABASES_HOST: postgres
+      DATABASES_PORT: 5432
+      DATABASES_USER: platform
+      DATABASES_PASSWORD: platform_dev_pass
+      DATABASES_DBNAME: platform
+      PGBOUNCER_POOL_MODE: transaction
+      PGBOUNCER_MAX_CLIENT_CONN: 1000
+      PGBOUNCER_DEFAULT_POOL_SIZE: 25
+      PGBOUNCER_SERVER_IDLE_TIMEOUT: 600
+    ports:
+      - '5433:5432'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - platform-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: platform-redis
+    restart: unless-stopped
+    command: >
+      redis-server
+      --requirepass redis_dev_pass
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --appendonly yes
+      --appendfsync everysec
+      --save 900 1
+      --save 300 10
+      --save 60 10000
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', '-a', 'redis_dev_pass', 'ping']
+      interval: 10s
+      retries: 5
+    networks:
+      - platform-net
+
+  minio:
+    image: minio/minio:latest
+    container_name: platform-minio
+    command: server /data --console-address ':9001'
+    environment:
+      MINIO_ROOT_USER: platform_admin
+      MINIO_ROOT_PASSWORD: platform_minio_pass
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - platform-net
+
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: platform-nginx
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - auth-service
+      - user-service
+      - school-service
+      - lesson-service
+      - game-service
+      - ai-service
+      - analytics-service
+      - web
+    networks:
+      - platform-net
+
+  # ═══════════════════════════════════════════════════════════════
+  # BACKEND SERVICES
+  # ═══════════════════════════════════════════════════════════════
+
+  auth-service:
+    build:
+      context: ../..
+      dockerfile: services/auth-service/Dockerfile
+    container_name: platform-auth
+    restart: unless-stopped
+    environment:
+      PORT: 3001
+      DATABASE_URL: postgresql://platform:platform_dev_pass@pgbouncer:5432/platform
+      REDIS_URL: redis://:redis_dev_pass@redis:6379
+      JWT_SECRET: dev_jwt_secret_change_in_production
+      JWT_EXPIRES_IN: 15m
+      REFRESH_TOKEN_EXPIRES_IN: 7d
+      NODE_ENV: development
+    ports:
+      - '3001:3001'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - platform-net
+    labels:
+      - 'prometheus.scrape=true'
+      - 'prometheus.port=3001'
+      - 'prometheus.path=/metrics'
+
+  user-service:
+    build:
+      context: ../..
+      dockerfile: services/user-service/Dockerfile
+    container_name: platform-users
+    restart: unless-stopped
+    environment:
+      PORT: 3003
+      DATABASE_URL: postgresql://platform:platform_dev_pass@pgbouncer:5432/platform
+      REDIS_URL: redis://:redis_dev_pass@redis:6379
+      NODE_ENV: development
+    ports:
+      - '3003:3003'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - platform-net
+    labels:
+      - 'prometheus.scrape=true'
+      - 'prometheus.port=3003'
+
+  school-service:
+    build:
+      context: ../..
+      dockerfile: services/school-service/Dockerfile
+    container_name: platform-schools
+    restart: unless-stopped
+    environment:
+      PORT: 3002
+      DATABASE_URL: postgresql://platform:platform_dev_pass@pgbouncer:5432/platform
+      REDIS_URL: redis://:redis_dev_pass@redis:6379
+      NODE_ENV: development
+    ports:
+      - '3002:3002'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - platform-net
+    labels:
+      - 'prometheus.scrape=true'
+      - 'prometheus.port=3002'
+
+  lesson-service:
+    build:
+      context: ../..
+      dockerfile: services/lesson-service/Dockerfile
+    container_name: platform-lessons
+    restart: unless-stopped
+    environment:
+      PORT: 3005
+      DATABASE_URL: postgresql://platform:platform_dev_pass@pgbouncer:5432/platform
+      REDIS_URL: redis://:redis_dev_pass@redis:6379
+      NODE_ENV: development
+    ports:
+      - '3005:3005'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - platform-net
+    labels:
+      - 'prometheus.scrape=true'
+      - 'prometheus.port=3005'
+
+  game-service:
+    build:
+      context: ../..
+      dockerfile: services/game-service/Dockerfile
+    container_name: platform-games
+    restart: unless-stopped
+    environment:
+      PORT: 3007
+      DATABASE_URL: postgresql://platform:platform_dev_pass@pgbouncer:5432/platform
+      REDIS_URL: redis://:redis_dev_pass@redis:6379
+      NODE_ENV: development
+    ports:
+      - '3007:3007'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - platform-net
+    labels:
+      - 'prometheus.scrape=true'
+      - 'prometheus.port=3007'
+
+  ai-service:
+    build:
+      context: ../..
+      dockerfile: services/ai-service/Dockerfile
+    container_name: platform-ai
+    restart: unless-stopped
+    environment:
+      PORT: 3008
+      DATABASE_URL: postgresql://platform:platform_dev_pass@pgbouncer:5432/platform
+      REDIS_URL: redis://:redis_dev_pass@redis:6379
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      NODE_ENV: development
+    ports:
+      - '3008:3008'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - platform-net
+    labels:
+      - 'prometheus.scrape=true'
+      - 'prometheus.port=3008'
+
+  analytics-service:
+    build:
+      context: ../..
+      dockerfile: services/analytics-service/Dockerfile
+    container_name: platform-analytics
+    restart: unless-stopped
+    environment:
+      PORT: 3009
+      DATABASE_URL: postgresql://platform:platform_dev_pass@pgbouncer:5432/platform
+      REDIS_URL: redis://:redis_dev_pass@redis:6379
+      NODE_ENV: development
+    ports:
+      - '3009:3009'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - platform-net
+    labels:
+      - 'prometheus.scrape=true'
+      - 'prometheus.port=3009'
+
+  # ═══════════════════════════════════════════════════════════════
+  # FRONTEND
+  # ═══════════════════════════════════════════════════════════════
+
+  web:
+    build:
+      context: ../..
+      dockerfile: apps/web/Dockerfile
+    container_name: platform-web
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_API_URL: http://localhost/api
+    ports:
+      - '3000:3000'
+    networks:
+      - platform-net
+
+  # ═══════════════════════════════════════════════════════════════
+  # MONITORING STACK
+  # ═══════════════════════════════════════════════════════════════
+
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    container_name: platform-prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+    ports:
+      - '9090:9090'
+    volumes:
+      - ../monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ../monitoring/prometheus/alert-rules.yml:/etc/prometheus/alert-rules.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - platform-net
+
+  alertmanager:
+    image: prom/alertmanager:v0.26.0
+    container_name: platform-alertmanager
+    restart: unless-stopped
+    ports:
+      - '9093:9093'
+    volumes:
+      - ../monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    networks:
+      - platform-net
+
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: platform-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: platform_grafana_pass
+      GF_USERS_ALLOW_SIGN_UP: 'false'
+      GF_RENDERING_SERVER_URL: http://renderer:8081/render
+      GF_RENDERING_CALLBACK_URL: http://grafana:3000/
+    ports:
+      - '3030:3000'
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ../monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+      - ../monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+    depends_on:
+      - prometheus
+      - loki
+    networks:
+      - platform-net
+
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: platform-loki
+    restart: unless-stopped
+    ports:
+      - '3100:3100'
+    command: -config.file=/etc/loki/loki-config.yml
+    volumes:
+      - ../monitoring/loki/loki-config.yml:/etc/loki/loki-config.yml:ro
+      - loki_data:/loki
+    networks:
+      - platform-net
+
+  promtail:
+    image: grafana/promtail:2.9.0
+    container_name: platform-promtail
+    restart: unless-stopped
+    volumes:
+      - /var/log:/var/log:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - ../monitoring/loki/promtail-config.yml:/etc/promtail/promtail-config.yml:ro
+    command: -config.file=/etc/promtail/promtail-config.yml
+    depends_on:
+      - loki
+    networks:
+      - platform-net
+
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.55.0
+    container_name: platform-redis-exporter
+    restart: unless-stopped
+    environment:
+      REDIS_ADDR: redis://redis:6379
+      REDIS_PASSWORD: redis_dev_pass
+    ports:
+      - '9121:9121'
+    depends_on:
+      - redis
+    networks:
+      - platform-net
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.15.0
+    container_name: platform-postgres-exporter
+    restart: unless-stopped
+    environment:
+      DATA_SOURCE_NAME: postgresql://platform:platform_dev_pass@postgres:5432/platform?sslmode=disable
+    ports:
+      - '9187:9187'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - platform-net
