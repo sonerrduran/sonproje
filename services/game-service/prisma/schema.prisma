@@ -1,0 +1,171 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ═══════════════════════════════════════════════════════════
+// USER (Minimal - for relations)
+// ═══════════════════════════════════════════════════════════
+
+model User {
+  id             String   @id @default(cuid())
+  email          String   @unique
+  password       String
+  name           String
+  role           String   @default("STUDENT")
+  schoolId       String?
+  gradeLevel     Int      @default(1)
+  stars          Int      @default(0)
+  xp             Int      @default(0)
+  level          Int      @default(1)
+  avatar         String   @default("👨‍🚀")
+  solvedProblems Int      @default(0)
+  streakDays     Int      @default(0)
+  lastActiveDate String?
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  sessions                  GameSession[]
+  dailyChallengeCompletions DailyChallengeCompletion[]
+
+  @@index([email])
+  @@index([role])
+  @@index([stars])
+}
+
+// ═══════════════════════════════════════════════════════════
+// GAME CATEGORIES
+// ═══════════════════════════════════════════════════════════
+
+model GameCategory {
+  id          String   @id @default(cuid())
+  name        String
+  code        String   @unique
+  icon        String   @default("🎮")
+  color       String   @default("#3B82F6")
+  description String?
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  games       Game[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([code])
+  @@index([isActive])
+}
+
+// ═══════════════════════════════════════════════════════════
+// GAMES
+// ═══════════════════════════════════════════════════════════
+
+model Game {
+  id          String       @id @default(cuid())
+  name        String
+  code        String       @unique
+  categoryId  String
+  category    GameCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  description String?
+  icon        String       @default("🎯")
+  gradeMin    Int          @default(1)
+  gradeMax    Int          @default(8)
+  difficulty  String       @default("MEDIUM")
+  component   String
+  path        String?
+  tags        String       @default("[]")
+  isActive    Boolean      @default(true)
+  isFeatured  Boolean      @default(false)
+  sortOrder   Int          @default(0)
+  playCount   Int          @default(0)
+  avgRating   Float        @default(0)
+  contents    GameContent[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([categoryId])
+  @@index([code])
+  @@index([isActive])
+  @@index([isFeatured])
+}
+
+// ═══════════════════════════════════════════════════════════
+// GAME CONTENT
+// ═══════════════════════════════════════════════════════════
+
+model GameContent {
+  id        String   @id @default(cuid())
+  gameId    String
+  game      Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  type      String
+  title     String?
+  data      String
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([gameId, type])
+}
+
+// ═══════════════════════════════════════════════════════════
+// GAME SESSIONS
+// ═══════════════════════════════════════════════════════════
+
+model GameSession {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id])
+  gameMode       String
+  difficulty     String
+  grade          Int
+  score          Int      @default(0)
+  starsEarned    Int      @default(0)
+  xpEarned       Int      @default(0)
+  correctAnswers Int      @default(0)
+  totalQuestions Int      @default(0)
+  durationSec    Int      @default(0)
+  subjectId      String?
+  topicId        String?
+  completedAt    DateTime @default(now())
+
+  @@index([userId, completedAt])
+  @@index([gameMode])
+  @@index([completedAt])
+}
+
+// ═══════════════════════════════════════════════════════════
+// DAILY CHALLENGE
+// ═══════════════════════════════════════════════════════════
+
+model DailyChallenge {
+  id          String                     @id @default(cuid())
+  date        String                     @unique
+  gameMode    String
+  difficulty  String
+  grade       Int
+  title       String
+  description String
+  bonusStars  Int                        @default(5)
+  bonusXp     Int                        @default(20)
+  completions DailyChallengeCompletion[]
+  createdAt   DateTime                   @default(now())
+
+  @@index([date])
+}
+
+model DailyChallengeCompletion {
+  id          String         @id @default(cuid())
+  userId      String
+  user        User           @relation(fields: [userId], references: [id])
+  challengeId String
+  challenge   DailyChallenge @relation(fields: [challengeId], references: [id])
+  completedAt DateTime       @default(now())
+
+  @@unique([userId, challengeId])
+  @@index([userId])
+  @@index([challengeId])
+}
