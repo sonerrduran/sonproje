@@ -302,3 +302,10 @@ export interface StudentBadge {
   badge: Badge;
   earnedAt: string;
 }
+
+// ─── Game Engine Types (Migrated from main project) ─────────
+
+export * from './auth.types';
+export * from './game.types';
+export * from './engine.types';
+export * from './dataset.types';

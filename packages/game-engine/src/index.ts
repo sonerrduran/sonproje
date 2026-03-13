@@ -134,3 +134,7 @@ export class GameBridge {
 }
 
 export default GameBridge;
+
+// ─── Engine Registry (Migrated from main project) ────────────
+
+export * from './registry';
