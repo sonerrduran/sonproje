@@ -1,0 +1,38 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ═══════════════════════════════════════════════════════════
+// KULLANICILAR VE ROLLER
+// ═══════════════════════════════════════════════════════════
+
+model User {
+  id             String   @id @default(cuid())
+  email          String   @unique
+  password       String
+  name           String
+  role           String   @default("STUDENT") // SUPER_ADMIN, SCHOOL_ADMIN, TEACHER, STUDENT, PARENT
+  schoolId       String?
+  gradeLevel     Int      @default(1)
+  stars          Int      @default(0)
+  xp             Int      @default(0)
+  level          Int      @default(1)
+  avatar         String   @default("👨‍🚀")
+  solvedProblems Int      @default(0)
+  streakDays     Int      @default(0)
+  lastActiveDate String?  // YYYY-MM-DD
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([email])
+  @@index([role])
+  @@index([isActive])
+  @@index([stars])
+  @@index([schoolId])
+}
